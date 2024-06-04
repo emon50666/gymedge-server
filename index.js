@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, Timestamp } = require('mongodb');
 const port = process.env.PORT || 5000
 app.use(express.json())
 require('dotenv').config();
@@ -26,6 +26,8 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
 
     const addNewClassCollection = client.db('jymTrainer').collection('class')
+    const blogCollection = client.db('jymTrainer').collection('blogs')
+
 
     const userCollection = client.db('jymTrainer').collection('users')
     const newsLetterCollection = client.db('jymTrainer').collection('news')
@@ -49,6 +51,38 @@ async function run() {
 
 
 
+    // add blog api
+app.post('/blog', async (req, res) => {
+  const newBlog = req.body;
+  console.log(newBlog);
+  
+  const blogResult = await blogCollection.insertOne(newBlog);
+
+ 
+  const cursor = blogCollection.find().sort({ date: -1 }).limit(6); 
+  const recentBlogs = await cursor.toArray();
+
+ 
+  res.send({ blogResult, recentBlogs });
+});
+
+
+// get recent blog posts
+app.get('/blog', async (req, res) => {
+  const cursor = blogCollection.find().sort({ date: -1 }).limit(6); 
+  const result = await cursor.toArray();
+  res.send(result);
+});
+
+
+// get a specific blog id api
+app.get('/blog/:id',async(req,res)=>{
+  const id = req.params.id
+  const query = {_id: new ObjectId (id)}
+  const result =  await blogCollection.findOne(query)
+  res.send(result)
+})
+
 
 
 
@@ -56,19 +90,58 @@ async function run() {
 
 
 // login register user info save database api
-
-    app.post('/users',async(req,res)=>{
-        const user = req.body;
+// 
+    // app.post('/users',async(req,res)=>{
+    //     const user = req.body;
      
-        // check have a user on social media login
-        const query = {email: user.email}
-        const existingUser = await userCollection.findOne(query)
-        if(existingUser){
-          return res.send({message: 'user already exist',insertedId: null})
+    //     // check have a user on social media login
+    //     const query = {email: user.email}
+    //     const existingUser = await userCollection.findOne(query)
+    //     if(existingUser){
+    //       return res.send({message: 'user already exist',insertedId: null})
+    //     }
+    //     const result = await userCollection.insertOne(user);
+    //     res.send(result)
+    //   })
+
+
+
+    // save a user data in db 
+    app.put('/users',async(req,res)=>{
+      const user = req.body;
+      const query = {email: user?.email}
+// check  if user already exist in db
+      const isExist = await userCollection.findOne(query)
+
+     if(isExist){
+      if(user.status === 'Requested'){
+        const result = await userCollection.updateOne(query,{
+          $set:
+            {status: user?.status},
+          
+        })
+        return res.send(result)
+
+      }
+      else{
+        return res.send(isExist)
+       }
+     }
+
+      
+      const options = {upsert: true}
+
+      const updateDoc = {
+        $set:{
+          ...user,
+          Timestamp:  Date.now()
         }
-        const result = await userCollection.insertOne(user);
-        res.send(result)
-      })
+      }
+      const result = await userCollection.updateOne(query,updateDoc,options);
+      res.send(result)
+    })
+
+
 
 
     //   news letter subscribe data save on database 
