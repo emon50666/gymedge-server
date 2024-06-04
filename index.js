@@ -25,9 +25,35 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
 
+    const addNewClassCollection = client.db('jymTrainer').collection('class')
 
     const userCollection = client.db('jymTrainer').collection('users')
     const newsLetterCollection = client.db('jymTrainer').collection('news')
+
+
+
+    // add new class api save data in mongodb
+    app.post('/jym',async(req,res)=>{
+      const jymData = req.body;
+      const result = await addNewClassCollection.insertOne(jymData)
+      res.send(result)
+
+    })
+
+    // get all add new class api
+    app.get('/jymAllClass',async(req,res)=>{
+      const cursor = addNewClassCollection.find();
+      const result = await cursor.toArray();
+      res.send(result)
+    })
+
+
+
+
+
+
+
+
 
 // login register user info save database api
 
