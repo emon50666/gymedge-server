@@ -10,6 +10,8 @@ app.use(express.json());
 
 
 
+
+
 const uri = `mongodb+srv://${process.env.DB_USER_NAME}:${process.env.DB_USER_PASS}@cluster0.mbvqn67.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -27,6 +29,8 @@ async function run() {
 
     const addNewClassCollection = client.db('jymTrainer').collection('class')
     const blogCollection = client.db('jymTrainer').collection('blogs')
+    const appliedCollection = client.db('jymTrainer').collection('appliedTrainer')
+
 
 
     const userCollection = client.db('jymTrainer').collection('users')
@@ -35,7 +39,7 @@ async function run() {
 
 
     // add new class api save data in mongodb
-    app.post('/jym',async(req,res)=>{
+    app.post('/jym', async (req, res) => {
       const jymData = req.body;
       const result = await addNewClassCollection.insertOne(jymData)
       res.send(result)
@@ -43,7 +47,7 @@ async function run() {
     })
 
     // get all add new class api
-    app.get('/jymAllClass',async(req,res)=>{
+    app.get('/jymAllClass', async (req, res) => {
       const cursor = addNewClassCollection.find();
       const result = await cursor.toArray();
       res.send(result)
@@ -52,48 +56,48 @@ async function run() {
 
 
     // add blog api
-app.post('/blog', async (req, res) => {
-  const newBlog = req.body;
-  console.log(newBlog);
-  
-  const blogResult = await blogCollection.insertOne(newBlog);
+    app.post('/blog', async (req, res) => {
+      const newBlog = req.body;
+      console.log(newBlog);
 
- 
-  const cursor = blogCollection.find().sort({ date: -1 }).limit(6); 
-  const recentBlogs = await cursor.toArray();
-
- 
-  res.send({ blogResult, recentBlogs });
-});
+      const blogResult = await blogCollection.insertOne(newBlog);
 
 
-// get recent blog posts
-app.get('/blog', async (req, res) => {
-  const cursor = blogCollection.find().sort({ date: -1 }).limit(6); 
-  const result = await cursor.toArray();
-  res.send(result);
-});
+      const cursor = blogCollection.find().sort({ date: -1 }).limit(6);
+      const recentBlogs = await cursor.toArray();
 
 
-// get a specific blog id api
-app.get('/blog/:id',async(req,res)=>{
-  const id = req.params.id
-  const query = {_id: new ObjectId (id)}
-  const result =  await blogCollection.findOne(query)
-  res.send(result)
-})
+      res.send({ blogResult, recentBlogs });
+    });
 
 
+    // get recent blog posts
+    app.get('/blog', async (req, res) => {
+      const cursor = blogCollection.find().sort({ date: -1 }).limit(6);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+
+    // get a specific blog id api
+    app.get('/blog/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await blogCollection.findOne(query)
+      res.send(result)
+    })
 
 
 
 
 
-// login register user info save database api
-// 
+
+
+    // login register user info save database api
+    // 
     // app.post('/users',async(req,res)=>{
     //     const user = req.body;
-     
+
     //     // check have a user on social media login
     //     const query = {email: user.email}
     //     const existingUser = await userCollection.findOne(query)
@@ -107,37 +111,37 @@ app.get('/blog/:id',async(req,res)=>{
 
 
     // save a user data in db 
-    app.put('/users',async(req,res)=>{
+    app.put('/users', async (req, res) => {
       const user = req.body;
-      const query = {email: user?.email}
-// check  if user already exist in db
+      const query = { email: user?.email }
+      // check  if user already exist in db
       const isExist = await userCollection.findOne(query)
 
-     if(isExist){
-      if(user.status === 'Requested'){
-        const result = await userCollection.updateOne(query,{
-          $set:
-            {status: user?.status},
-          
-        })
-        return res.send(result)
+      if (isExist) {
+        if (user.status === 'Requested') {
+          const result = await userCollection.updateOne(query, {
+            $set:
+              { status: user?.status },
 
-      }
-      else{
-        return res.send(isExist)
-       }
-     }
+          })
+          return res.send(result)
 
-      
-      const options = {upsert: true}
-
-      const updateDoc = {
-        $set:{
-          ...user,
-          Timestamp:  Date.now()
+        }
+        else {
+          return res.send(isExist)
         }
       }
-      const result = await userCollection.updateOne(query,updateDoc,options);
+
+
+      const options = { upsert: true }
+
+      const updateDoc = {
+        $set: {
+          ...user,
+          Timestamp: Date.now()
+        }
+      }
+      const result = await userCollection.updateOne(query, updateDoc, options);
       res.send(result)
     })
 
@@ -145,23 +149,41 @@ app.get('/blog/:id',async(req,res)=>{
 
 
     //   news letter subscribe data save on database 
-    app.post('/news',async(req,res)=>{
-        const user = req.body;
-     
-        // check have a user on social media login
-        const query = {email: user.email}
-        const existingUser = await userCollection.findOne(query)
-        if(existingUser){
-          return res.send({message: 'user already exist',insertedId: null})
-        }
-        const result = await newsLetterCollection.insertOne(user);
-        res.send(result)
-      })
+    app.post('/news', async (req, res) => {
+      const user = req.body;
 
-   
+      // check have a user on social media login
+      const query = { email: user.email }
+      const existingUser = await userCollection.findOne(query)
+      if (existingUser) {
+        return res.send({ message: 'user already exist', insertedId: null })
+      }
+      const result = await newsLetterCollection.insertOne(user);
+      res.send(result)
+    })
 
 
-    
+
+
+
+    app.post('/applied', async (req, res) => {
+      const appliData = req.body;
+      console.log(appliData)
+
+      const result = await appliedCollection.insertOne(appliData);
+      res.send(result)
+    });
+
+
+
+      // get recent blog posts
+      app.get('/applied', async (req, res) => {
+        const cursor = appliedCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      });
+
+
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
@@ -183,13 +205,13 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send(' Server is running')
-  })
-  
-  app.listen(port, () => {
-    console.log(`server is running on port ${port}`)
-  })
+  res.send(' Server is running')
+})
 
-  
+app.listen(port, () => {
+  console.log(`server is running on port ${port}`)
+})
+
+
 //   gym
 //   sQYmkVf75cQr7d63
