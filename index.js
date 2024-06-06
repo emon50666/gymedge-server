@@ -71,6 +71,12 @@ async function run() {
     });
 
 
+    
+
+
+
+
+
     // get recent blog posts
     app.get('/blog', async (req, res) => {
       const cursor = blogCollection.find().sort({ date: -1 }).limit(6);
@@ -144,6 +150,17 @@ async function run() {
       const result = await userCollection.updateOne(query, updateDoc, options);
       res.send(result)
     })
+
+
+    // set a user role base user email 
+    app.get('/users/:email',async(req,res)=>{
+      const email = req.params.email;
+      const result = await userCollection.findOne({email});
+      res.send(result)
+    })
+
+
+
 
 
 
