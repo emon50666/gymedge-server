@@ -126,6 +126,7 @@ async function run() {
     app.put('/users', async (req, res) => {
       const user = req.body;
       const query = { email: user?.email }
+      
       // check  if user already exist in db
       const isExist = await userCollection.findOne(query)
 
@@ -143,7 +144,6 @@ async function run() {
           return res.send(isExist)
         }
       }
-
 
       const options = { upsert: true }
 
@@ -163,6 +163,23 @@ async function run() {
       const email = req.params.email;
       const result = await userCollection.findOne({email});
       res.send(result)
+    })
+
+
+
+    // update user role api
+    app.patch('/users/update/:email',async(req,res)=>{
+      const email = req.params.email;
+      const user = req.body;
+      const query = {email};
+      const updateDoc = {
+        $set:{
+          ...user,  Timestamp: Date.now(),
+        }
+      }
+      const result = await userCollection.updateOne(query,updateDoc)
+      res.send(result)
+
     })
 
 
