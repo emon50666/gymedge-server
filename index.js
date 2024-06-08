@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express();
-const { MongoClient, ServerApiVersion, Timestamp } = require('mongodb');
+const { MongoClient, ServerApiVersion, Timestamp, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000
 app.use(express.json())
 require('dotenv').config();
@@ -203,9 +203,17 @@ async function run() {
     })
 
 
+     // get all news letter users
+     app.get('/news', async (req, res) => {
+      const cursor = newsLetterCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
 
 
+
+// all trainer api
     app.post('/applied', async (req, res) => {
       const appliData = req.body;
       console.log(appliData)
@@ -216,13 +224,20 @@ async function run() {
 
 
 
-      // get recent blog posts
+      // get all trainer api
       app.get('/applied', async (req, res) => {
         const cursor = appliedCollection.find();
         const result = await cursor.toArray();
         res.send(result);
       });
 
+// get a different different trainer id
+      app.get('/applied/:id', async (req, res) => {
+        const id = req.params.id
+        const query = { _id: new ObjectId(id) }
+        const result = await appliedCollection.findOne(query)
+        res.send(result)
+      })
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
