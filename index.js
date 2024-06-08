@@ -30,18 +30,16 @@ async function run() {
     const addNewClassCollection = client.db('jymTrainer').collection('class')
     const blogCollection = client.db('jymTrainer').collection('blogs')
     const appliedCollection = client.db('jymTrainer').collection('appliedTrainer')
-
-
-
     const userCollection = client.db('jymTrainer').collection('users')
     const newsLetterCollection = client.db('jymTrainer').collection('news')
 
 
 
     // add new class api save data in mongodb
-    app.post('/jym', async (req, res) => {
+    app.post('/jymClass', async (req, res) => {
       const jymData = req.body;
       const result = await addNewClassCollection.insertOne(jymData)
+      console.log(result);
       res.send(result)
 
     })
@@ -50,7 +48,9 @@ async function run() {
     app.get('/jymAllClass', async (req, res) => {
       const cursor = addNewClassCollection.find();
       const result = await cursor.toArray();
+      console.log(result);
       res.send(result)
+
     })
 
 
