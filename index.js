@@ -32,6 +32,8 @@ async function run() {
     const appliedCollection = client.db('jymTrainer').collection('appliedTrainer')
     const userCollection = client.db('jymTrainer').collection('users')
     const newsLetterCollection = client.db('jymTrainer').collection('news')
+    const addSlotCollection = client.db('jymTrainer').collection('slot')
+
 
 
 
@@ -238,6 +240,38 @@ async function run() {
         const result = await appliedCollection.findOne(query)
         res.send(result)
       })
+
+
+
+      // trainer add slot api
+    app.post('/slots', async (req, res) => {
+      const addSlot = req.body;
+      console.log(addSlot)
+
+      const result = await addSlotCollection.insertOne(addSlot);
+      res.send(result)
+    });
+
+    // app.get('/slots', async (req, res) => {
+    //   const cursor = addSlotCollection.find();
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
+
+
+
+// get all slots api
+app.get('/slots/:email', async (req, res) => {
+  const email = req.params.email;
+  const result = await addSlotCollection.find({ email }).toArray();
+  res.send(result);
+});
+
+
+
+
+
+    
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
