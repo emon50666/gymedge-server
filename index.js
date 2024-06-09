@@ -107,6 +107,19 @@ async function run() {
 
 
 
+     // admin delete user and trainer
+     app.delete('/applied/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId (id)}
+      const result = await appliedCollection.deleteOne(query);
+      res.send(result)
+    })
+
+
+
+
+
+
     // login register user info save database api
     // 
     // app.post('/users',async(req,res)=>{
