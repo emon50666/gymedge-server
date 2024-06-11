@@ -3,6 +3,9 @@ const app = express();
 const { MongoClient, ServerApiVersion, Timestamp, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000
 app.use(express.json())
+
+const stripe = require('stripe')(process.env.DB_STRIPE_SECRITE_KEY)
+
 require('dotenv').config();
 const cors = require('cors');
 app.use(cors());
@@ -33,6 +36,8 @@ async function run() {
     const userCollection = client.db('jymTrainer').collection('users')
     const newsLetterCollection = client.db('jymTrainer').collection('news')
     const addSlotCollection = client.db('jymTrainer').collection('slot')
+    const addPriceCollection = client.db('jymTrainer').collection('price')
+
 
 
 
@@ -54,6 +59,17 @@ async function run() {
       res.send(result)
 
     })
+
+
+
+    // app.get('/jymAllClass/:id', async (req, res) => {
+    //   const id = req.params.id
+    //   const query = { _id: new ObjectId(id) }
+    //   const result = await addNewClassCollection.findOne(query)
+    //   res.send(result)
+    // })
+
+
 
 
 
@@ -255,6 +271,16 @@ async function run() {
       })
 
 
+      // applied trainer email api
+      app.get('/applied/:email', async (req, res) => {
+        const email = req.params.email;
+        const result = await appliedCollection.findOne({ email })
+        res.send(result);
+        
+      })
+
+
+
 
       // trainer add slot api
     app.post('/slots', async (req, res) => {
@@ -265,11 +291,11 @@ async function run() {
       res.send(result)
     });
 
-    // app.get('/slots', async (req, res) => {
-    //   const cursor = addSlotCollection.find();
-    //   const result = await cursor.toArray();
-    //   res.send(result);
-    // });
+    app.get('/slots', async (req, res) => {
+      const cursor = addSlotCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
 
 
@@ -280,6 +306,80 @@ app.get('/slots/:email', async (req, res) => {
   res.send(result);
 });
 
+
+app.get('/slots/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = {_id: new ObjectId (id)}
+
+  const result = await addSlotCollection.find(query).toArray();
+  res.send(result);
+});
+
+
+
+// member ship price add api
+// app.post('/price',async(req,res)=>{
+//   const cartItem = req.body;
+//   const result = await addPriceCollection.insertOne(cartItem);
+//   res.send(result)
+// })
+
+
+// app.post('/addMembership', async (req, res) => {
+//   const membership = req.body;
+//   const result = await addPriceCollection.insertOne(membership);
+//   res.status(201).send(result);
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+// payment intent
+app.post("/create-payment-intent", async (req, res) => {
+  const {setPrice} = req.body;
+  const amount = parseInt(setPrice * 100);
+  console.log(amount,'amount inside the intent');
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount,
+    currency: "usd",
+    payment_method_types:[  'card']
+  });
+
+  res.send({
+    clientSecret: paymentIntent.client_secret
+  })
+
+})
+
+
+
+
+
+// app.post("/create-payment-intent", async (req, res) => {
+//   const {price} = req.body;
+//   const amount = parseInt(price * 100);
+//   console.log(amount,'amount inside the intent');
+
+//   const paymentIntent = await stripe.paymentIntents.create({
+//     amount: amount,
+//     currency: "usd",
+//     payment_method_types:[  'card']
+//   });
+
+//   res.send({
+//     clientSecret: paymentIntent.client_secret
+//   })
+
+// })
 
 
 
