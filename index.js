@@ -36,7 +36,9 @@ async function run() {
     const userCollection = client.db('jymTrainer').collection('users')
     const newsLetterCollection = client.db('jymTrainer').collection('news')
     const addSlotCollection = client.db('jymTrainer').collection('slot')
-    const addPriceCollection = client.db('jymTrainer').collection('price')
+    const paymentCollection = client.db('jymTrainer').collection('payment')
+    const reviewCollection = client.db('jymTrainer').collection('review')
+
 
 
 
@@ -373,7 +375,20 @@ app.post("/create-payment-intent", async (req, res) => {
 })
 
 
+// payment data save api
+app.post('/payments',async(req,res)=>{
+  const payment = req.body;
+  const paymentResult = await paymentCollection.insertOne(payment)
+  console.log('payment info',payment);
+  res.send(paymentResult)
+})
 
+
+// get a payment data
+app.get('/payments',async(req,res)=>{
+  const result = await paymentCollection.find().toArray()
+  res.send(result)
+})
 
 
 // app.post("/create-payment-intent", async (req, res) => {
@@ -395,6 +410,26 @@ app.post("/create-payment-intent", async (req, res) => {
 
 
 
+
+// review post 
+app.post('/api/reviews', async (req, res) => {
+  const review = req.body;
+
+  try {
+      const result = await reviewCollection.insertOne(review); // Insert the review into the 'reviews' collection
+      res.status(201).json(result);
+  } catch (error) {
+      console.error('Error inserting review:', error);
+      res.status(500).json({ error: 'Failed to submit review' });
+  }
+});
+
+
+// get a review
+app.get('/reviews',async(req,res)=>{
+  const result = await reviewCollection.find().toArray()
+  res.send(result)
+})
 
     
 
