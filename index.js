@@ -222,26 +222,65 @@ async function run() {
 
 
     //   news letter subscribe data save on database 
-    app.post('/news', async (req, res) => {
-      const user = req.body;
+    // app.post('/news', async (req, res) => {
+    //   const user = req.body;
 
-      // check have a user on social media login
-      const query = { email: user.email }
-      const existingUser = await userCollection.findOne(query)
-      if (existingUser) {
-        return res.send({ message: 'user already exist', insertedId: null })
-      }
-      const result = await newsLetterCollection.insertOne(user);
-      res.send(result)
-    })
+    //   // check have a user on social media login
+    //   const query = { email: user.email }
+    //   const existingUser = await userCollection.findOne(query)
+    //   if (existingUser) {
+    //     return res.send({ message: 'user already exist', insertedId: null })
+    //   }
+    //   const result = await newsLetterCollection.insertOne(user);
+    //   res.send(result)
+    // })
 
 
      // get all news letter users
-     app.get('/news', async (req, res) => {
+    //  app.get('/news', async (req, res) => {
+    //   const cursor = newsLetterCollection.find();
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
+
+
+
+    // Subscribe to newsletter
+app.post('/news', async (req, res) => {
+  try {
+      const user = req.body;
+      
+      // Check if user already exists in newsletter collection
+      const query = { email: user.email };
+      const existingUser = await newsLetterCollection.findOne(query);
+      
+      if (existingUser) {
+          return res.status(400).send({ message: 'User already exists', insertedId: null });
+      }
+      
+      // Insert new user into newsletter collection
+      const result = await newsLetterCollection.insertOne(user);
+      res.send(result);
+  } catch (error) {
+      res.status(500).send({ message: 'An error occurred', error });
+  }
+});
+
+// Get all newsletter subscribers
+app.get('/news', async (req, res) => {
+  try {
       const cursor = newsLetterCollection.find();
       const result = await cursor.toArray();
       res.send(result);
-    });
+  } catch (error) {
+      res.status(500).send({ message: 'An error occurred', error });
+  }
+});
+
+
+
+
+
 
 
 
@@ -440,7 +479,6 @@ app.get('/reviews',async(req,res)=>{
   }
 }
 run().catch(console.dir);
-
 
 
 
