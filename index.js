@@ -3,10 +3,10 @@ const app = express();
 const { MongoClient, ServerApiVersion, Timestamp, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000
 app.use(express.json())
-
+require('dotenv').config();
 const stripe = require('stripe')(process.env.DB_STRIPE_SECRITE_KEY)
 
-require('dotenv').config();
+
 const cors = require('cors');
 app.use(cors());
 app.use(express.json());
@@ -316,6 +316,16 @@ app.get('/slots/:id', async (req, res) => {
 });
 
 
+// delete slot 
+app.delete('/slots/:id',async(req,res)=>{
+  const id = req.params.id;
+  const query = {_id: new ObjectId (id)}
+  const result = await addSlotCollection.deleteOne(query);
+  res.send(result)
+})
+
+
+
 
 // member ship price add api
 // app.post('/price',async(req,res)=>{
@@ -344,8 +354,10 @@ app.get('/slots/:id', async (req, res) => {
 
 // payment intent
 app.post("/create-payment-intent", async (req, res) => {
-  const {setPrice} = req.body;
-  const amount = parseInt(setPrice * 100);
+  const {price} = req.body;
+  console.log(req.body);
+  console.log(price);
+  const amount = parseInt(price * 100);
   console.log(amount,'amount inside the intent');
 
   const paymentIntent = await stripe.paymentIntents.create({
